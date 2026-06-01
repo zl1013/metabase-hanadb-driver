@@ -1,0 +1,6 @@
+services:
+  metabase:
+    environment:
+      MB_PLUGINS_DIR: /plugins
+    volumes:
+      - ${MB_PLUGINS_HOST_DIR:-/opt/metabase/plugins}:/plugins

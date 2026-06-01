@@ -1,0 +1,48 @@
+services:
+  app-db:
+    image: postgres:16
+    container_name: metabase-hanadb-app-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${MB_APP_DB_NAME:-metabaseappdb}
+      POSTGRES_USER: ${MB_APP_DB_USER:-metabase}
+      POSTGRES_PASSWORD: ${MB_APP_DB_PASS:?Set MB_APP_DB_PASS in .env}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${MB_APP_DB_USER:-metabase} -d ${MB_APP_DB_NAME:-metabaseappdb}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "${MB_APP_DB_PORT:-5432}:5432"
+    volumes:
+      - app-db-data:/var/lib/postgresql/data
+
+  metabase:
+    image: ${METABASE_IMAGE:-metabase/metabase:latest}
+    container_name: ${METABASE_CONTAINER_NAME:-metabase-hanadb}
+    restart: unless-stopped
+    depends_on:
+      app-db:
+        condition: service_healthy
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: ${MB_APP_DB_NAME:-metabaseappdb}
+      MB_DB_HOST: app-db
+      MB_DB_PORT: 5432
+      MB_DB_USER: ${MB_APP_DB_USER:-metabase}
+      MB_DB_PASS: ${MB_APP_DB_PASS:?Set MB_APP_DB_PASS in .env}
+      MB_PLUGINS_DIR: /plugins
+    ports:
+      - "${METABASE_PORT:-3000}:3000"
+    volumes:
+      - metabase-data:/metabase-data
+      - ./build/plugins:/plugins
+      - /dev/urandom:/dev/random:ro
+
+volumes:
+  app-db-data:
+  metabase-data:
