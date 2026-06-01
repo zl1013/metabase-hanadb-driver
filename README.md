@@ -1,7 +1,9 @@
 # Metabase SAP HANA Driver
 
 Community driver scaffold for connecting Metabase OSS to SAP HANA through the
-SAP HANA JDBC driver.
+SAP HANA JDBC driver. Clone this repository, build the Metabase plugin, place
+SAP's `ngdbc.jar` next to the plugin JAR, and run Metabase with that plugins
+directory mounted.
 
 This repository is intentionally small and public-safe:
 
@@ -42,6 +44,13 @@ or another license-compliant SAP distribution channel.
 
 ## Quick Start
 
+Clone the repository:
+
+```bash
+git clone https://github.com/handicop/metabase-hanadb-driver.git
+cd metabase-hanadb-driver
+```
+
 Create a local environment file:
 
 ```bash
@@ -77,6 +86,9 @@ make stack-up
 
 Open Metabase at `http://localhost:3000` and add a database with type
 `SAP HANA`.
+
+The repository root is the working directory. You should see `README.md`,
+`Makefile`, `driver/`, `scripts/`, and `docs/` immediately after cloning.
 
 ## JDBC Smoke Test
 
