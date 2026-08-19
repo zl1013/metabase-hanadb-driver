@@ -1,0 +1,44 @@
+name: Build HANA Plugin Bundle
+
+on:
+  workflow_dispatch: # 允许你通过 GitHub 网页界面手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Install Clojure CLI
+        run: |
+          curl -O https://download.clojure.org/install/linux-install-1.11.1.1413.sh
+          chmod +x linux-install-1.11.1.1413.sh
+          sudo ./linux-install-1.11.1.1413.sh
+
+      - name: Bootstrap Metabase Source
+        run: make bootstrap
+
+      - name: Build Driver
+        run: make driver-build
+
+      # 注意：这里缺少了 SAP HANA 的 JDBC 驱动文件 ngdbc.jar。
+      # 因此，打包命令 make plugin-bundle 会执行，但生成的包内将不包含真正的连接驱动。
+      # 最终使用时，你仍需自行将 ngdbc.jar 放入插件目录。
+      - name: Package Plugin Bundle
+        run: |
+          mkdir -p dist
+          # 这里假设 make plugin-bundle 会生成文件到 dist/ 目录
+          make plugin-bundle
+
+      - name: Upload Plugin Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metabase-hanadb-plugin-bundle
+          path: dist/*.tar.gz
